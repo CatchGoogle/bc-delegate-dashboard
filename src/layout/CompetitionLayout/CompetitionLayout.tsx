@@ -1,6 +1,7 @@
 import { Errors } from '../../components/Errors';
 import { DrawerHeader, DrawerLinks, drawerWidth, CompetitionHeader } from './CompetitionHeader';
 import MaterialLink from '../../components/MaterialLink';
+import { APP_NAME } from '../../config/branding';
 import { getLocalStorage, setLocalStorage } from '../../lib/api';
 import BreadcrumbsProvider, {
   useBreadcrumbs,
@@ -93,7 +94,7 @@ export const CompetitionLayout = () => {
 
   useEffect(() => {
     if (wcif) {
-      document.title = 'Delegate Dashboard - ' + wcif.name;
+      document.title = `${APP_NAME} - ${wcif.name}`;
     }
   }, [wcif]);
 

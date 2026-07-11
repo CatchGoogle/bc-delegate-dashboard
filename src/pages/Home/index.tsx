@@ -1,40 +1,43 @@
 import mca_logo from '../../assets/mca_logo.png';
 import sec_logo from '../../assets/sec_logo.png';
 import wcc_logo from '../../assets/wcc_logo.png';
+import { APP_NAME, APP_TAGLINE } from '../../config/branding';
 import { useAuth } from '../../providers/AuthProvider';
+import { isOAuthClientConfigured } from '../../lib/api';
 import CompetitionList from '../../components/CompetitionList';
 import Header from './Header';
-import { Button, Container, Divider, Typography } from '@mui/material';
+import { Alert, Button, Container, Divider, Typography } from '@mui/material';
 
 const Home = () => {
-  const { signedIn, signIn } = useAuth();
+  const { signedIn, signIn, userFetchError } = useAuth();
+  const oauthConfigured = isOAuthClientConfigured();
 
   return (
     <>
       <Header />
       <div style={{ overflowY: 'auto', paddingTop: '1em' }}>
         <Container>
-          {/* <Alert
-            severity="info"
-            action={
-              <Button
-                color="inherit"
-                size="small"
-                href="https://cailynhoover.com/donate"
-                target="_blank"
-                rel="noreferrer">
-                Donate
-              </Button>
-            }>
-            <Typography variant="body2">
-              This tool is in an open beta. If you enjoy using this tool for your competitions,
-              please consider donating.
-            </Typography>
-          </Alert> */}
-          <br />
+          {!oauthConfigured && (
+            <>
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                Sign-in is not configured for this deployment. Add{' '}
+                <code>VITE_WCA_OAUTH_CLIENT_ID</code> (your WCA Application ID) in Netlify
+                environment variables, then trigger a new deploy.
+              </Alert>
+              <br />
+            </>
+          )}
+          {userFetchError && (
+            <>
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {userFetchError.message}
+              </Alert>
+              <br />
+            </>
+          )}
           <div>
             <Typography>
-              Delegate Dashboard is graciously supported by the following organizations:
+              {APP_NAME} is graciously supported by the following organizations:
             </Typography>
             <div
               style={{
@@ -73,9 +76,9 @@ const Home = () => {
         ) : (
           <Container>
             <Typography>
-              Welcome to Delegate Dashboard!
+              Welcome to {APP_NAME}!
               <br />
-              A stage-conscious groups management tool for WCA competitions
+              {APP_TAGLINE}
               <br />
               Use this tool to generate and configure groups, export data, or import your own
               groups!
@@ -86,7 +89,7 @@ const Home = () => {
             </Typography>
             <Divider style={{ margin: '1em 0' }} />
             <Typography>Sign in to view comps!</Typography>
-            <Button onClick={() => signIn()} variant="outlined">
+            <Button onClick={() => signIn()} variant="outlined" disabled={!oauthConfigured}>
               Sign In
             </Button>
           </Container>

@@ -1,0 +1,27 @@
+{
+  "$id": "com.delegate-dashboard.customRoleAssignments",
+  "title": "Custom Role Assignments",
+  "description": "Competition-level backup for custom role assignments that the WCA API may not accept on person records.",
+  "type": "object",
+  "properties": {
+    "groupAssignments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "registrantId": { "type": "number" },
+          "activityId": { "type": "number" },
+          "roleId": { "type": "string" }
+        },
+        "required": ["registrantId", "activityId", "roleId"]
+      }
+    },
+    "rolesByRegistrantId": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    }
+  }
+}

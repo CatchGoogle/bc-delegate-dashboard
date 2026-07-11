@@ -1,5 +1,6 @@
 import CompetitionSummary from '../../components/CompetitionSummaryCard';
 import RoundSelectorPage from '../../components/RoundSelector';
+import { APP_NAME } from '../../config/branding';
 import { useBreadcrumbs } from '../../providers/BreadcrumbsProvider';
 import Grid from '@mui/material/GridLegacy';
 import { useEffect } from 'react';
@@ -19,7 +20,7 @@ const CompetitionHome = () => {
   };
 
   useEffect(() => {
-    document.title = 'Delegate Dashboard';
+    document.title = APP_NAME;
   }, []);
 
   return (

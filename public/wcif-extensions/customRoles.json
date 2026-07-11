@@ -1,0 +1,16 @@
+{
+  "$id": "com.delegate-dashboard.customRoles",
+  "title": "Custom Person Roles",
+  "description": "Person-level custom roles that may not be supported by the base WCIF specification.",
+  "type": "object",
+  "properties": {
+    "roles": {
+      "description": "Custom roles assigned to this person.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["roles"]
+}

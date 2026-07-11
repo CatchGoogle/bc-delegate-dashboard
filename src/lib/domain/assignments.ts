@@ -21,7 +21,7 @@ export const createGroupAssignment = (
 export type HasAssignmentTest = (assignment: Assignment) => boolean;
 
 export const isStaffAssignment: HasAssignmentTest = (assignment: Assignment) =>
-  assignment.assignmentCode.startsWith('staff');
+  assignment.assignmentCode.startsWith('staff') || assignment.assignmentCode.startsWith('custom-');
 
 export const isCompetitorAssignment: HasAssignmentTest = (assignment: Assignment) =>
   assignment.assignmentCode === 'competitor';

@@ -1,3 +1,4 @@
+import { isGroupStaffAssignmentCode } from '../../lib/domain/assignmentDefinitions';
 import { type ActivityWithParent, type ActivityWithRoom } from '../../lib/domain/activities';
 import { roundFormatById } from '../../lib/domain/events';
 import { acceptedRegistration, isOrganizerOrDelegate } from '../../lib/domain/persons';
@@ -46,7 +47,7 @@ const PersonAssignmentRow = ({
 
   const totalStaffAssignments =
     person?.assignments
-      ?.filter((a) => a.assignmentCode.indexOf('staff-') > -1)
+      ?.filter((a) => isGroupStaffAssignmentCode(a.assignmentCode))
       ?.reduce(
         (acc, assignment) => {
           return {

@@ -2,7 +2,9 @@ import type { WcifEntity } from '../types';
 import type { Extension } from '../types';
 import {
   isActivityConfigExtensionData,
+  isCustomRoleDefinitionsExtensionData,
   isGroupsExtensionData,
+  isPersonCustomRolesExtensionData,
   isRoundConfigExtensionData,
 } from './guards';
 import type {
@@ -12,7 +14,13 @@ import type {
 } from './types';
 
 // Re-export type guards for convenience
-export { isActivityConfigExtensionData, isGroupsExtensionData, isRoundConfigExtensionData };
+export {
+  isActivityConfigExtensionData,
+  isCustomRoleDefinitionsExtensionData,
+  isGroupsExtensionData,
+  isPersonCustomRolesExtensionData,
+  isRoundConfigExtensionData,
+};
 
 export const DD_NAMESPACE = 'delegateDashboard';
 const DD_SPEC_URL_BASE =

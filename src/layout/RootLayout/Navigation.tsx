@@ -3,6 +3,7 @@ import { CompetitionLayout } from '../CompetitionLayout';
 import {
   Home as CompetitionHomePage,
   Staff as StaffPage,
+  CustomRoles as CustomRolesPage,
   Rooms as RoomsPage,
   Round as RoundPage,
   Person as PersonPage,
@@ -56,6 +57,7 @@ const Navigation = () => {
           <Route path=":competitionId" element={<CompetitionLayout />}>
             <Route index element={<CompetitionHomePage />} />
             <Route path="staff" element={<StaffPage />} />
+            <Route path="custom-roles" element={<CustomRolesPage />} />
             <Route path="rooms" element={<RoomsPage />} />
             <Route path="events/:roundId" element={<RoundPage />} />
             <Route path="persons/:registrantId" element={<PersonPage />} />

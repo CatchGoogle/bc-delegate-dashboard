@@ -1,6 +1,6 @@
 {
-  "name": "delegate_dashboard",
-  "version": "0.2.7",
+  "name": "delegate_dashboard_custom_roles_fork",
+  "version": "0.3.0-custom-roles",
   "private": true,
   "type": "module",
   "scripts": {

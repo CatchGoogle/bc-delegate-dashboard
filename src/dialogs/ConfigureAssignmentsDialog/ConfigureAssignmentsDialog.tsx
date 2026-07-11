@@ -1,4 +1,4 @@
-import Assignments from '../../config/assignments';
+import { getAssignmentsForCompetition } from '../../lib/domain/assignmentDefinitions';
 import TableAssignmentCell from '../../components/TableAssignmentCell';
 import { activityCodeToName, parseActivityCode } from '../../lib/domain/activities';
 import type { ActivityWithParent, ActivityWithRoom } from '../../lib/domain/activities';
@@ -106,7 +106,8 @@ const ConfigureAssignmentsDialog = ({
       return;
     }
 
-    const assignment = Assignments.find((a) => a.key === e.key);
+    const assignments = getAssignmentsForCompetition(wcif ?? null);
+    const assignment = assignments.find((a) => a.key === e.key);
     if (assignment) {
       setPaintingAssignmentCode(assignment.id);
     }
@@ -114,7 +115,7 @@ const ConfigureAssignmentsDialog = ({
     if (e.key === 'a') {
       setShowAllCompetitors((prev) => !prev);
     }
-  }, []);
+  }, [wcif]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -263,7 +264,7 @@ const ConfigureAssignmentsDialog = ({
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           <Typography>
             <span>Assigning: </span>
-            <b>{Assignments.find((a) => a.id === paintingAssignmentCode)?.name}</b>
+            <b>{getAssignmentsForCompetition(wcif ?? null).find((a) => a.id === paintingAssignmentCode)?.name}</b>
             {' | '}
             <span>Showing: </span>
             <b>{showAllCompetitors ? 'All Competitors' : 'staff'}</b>

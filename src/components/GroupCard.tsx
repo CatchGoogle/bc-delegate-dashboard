@@ -1,4 +1,5 @@
 import MaterialLink from './MaterialLink';
+import { getAssignmentLabel } from '../lib/domain/assignmentDefinitions';
 import {
   useMenuState,
   useDialogState,
@@ -69,10 +70,8 @@ const GroupCard = ({ groupActivity }: GroupCardProps) => {
     ?.find((e) => e.id === eventId)
     ?.rounds?.find((r) => r.id === `${eventId}-r${roundNumber}`);
 
-  const { competitors, staff, judges, scramblers, runners, other } = usePersonsByAssignment(
-    personsAssigned,
-    groupActivity.id
-  );
+  const { competitors, staff, judges, scramblers, runners, customRoles, other } =
+    usePersonsByAssignment(personsAssigned, groupActivity.id);
 
   const mapNames = useCallback(
     (array: PersonWithAssignment[]) =>
@@ -102,6 +101,18 @@ const GroupCard = ({ groupActivity }: GroupCardProps) => {
         : null,
     [groupActivity.id, wcif]
   );
+
+  const customRoleGroups = useMemo(() => {
+    const groupsByCode = new Map<string, PersonWithAssignment[]>();
+
+    customRoles.forEach((person) => {
+      const code = person.assignedActivity.assignmentCode;
+      const existing = groupsByCode.get(code) ?? [];
+      groupsByCode.set(code, [...existing, person]);
+    });
+
+    return groupsByCode;
+  }, [customRoles]);
 
   const errors = useMemo(
     () =>
@@ -191,6 +202,12 @@ const GroupCard = ({ groupActivity }: GroupCardProps) => {
                 <b>Runners: </b>
                 {mapNames(runners)}
               </Typography>
+              {Array.from(customRoleGroups.entries()).map(([assignmentCode, people]) => (
+                <Typography key={assignmentCode}>
+                  <b>{getAssignmentLabel(assignmentCode, wcif ?? null)}: </b>
+                  {mapNames(people)}
+                </Typography>
+              ))}
               {other.length > 0 && (
                 <Typography>
                   <b>Other: </b>

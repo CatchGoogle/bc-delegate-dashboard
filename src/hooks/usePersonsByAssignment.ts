@@ -14,11 +14,17 @@ const withAssignmentCode =
     assignedActivity.activityId === activityId &&
     assignedActivity.assignmentCode.indexOf(assignmentCode) > -1;
 
+const withExactAssignmentCode =
+  (activityId: number, assignmentCode: string) =>
+  ({ assignedActivity }: PersonWithAssignment): boolean =>
+    assignedActivity.activityId === activityId &&
+    assignedActivity.assignmentCode === assignmentCode;
+
 /**
  * Hook to categorize persons by their assignment types for a specific activity
  * @param personsAssigned - Array of persons with their assigned activity
  * @param activityId - The activity ID to filter by
- * @returns Object with competitors, staff, judges, scramblers, runners, and other
+ * @returns Object with competitors, staff, judges, scramblers, runners, customRoles, and other
  */
 export const usePersonsByAssignment = (
   personsAssigned: PersonWithAssignment[],
@@ -30,22 +36,38 @@ export const usePersonsByAssignment = (
   );
 
   const staff = useMemo(
-    () => personsAssigned.filter(withAssignmentCode(activityId, 'staff-')),
+    () =>
+      personsAssigned.filter(
+        ({ assignedActivity }) =>
+          assignedActivity.activityId === activityId &&
+          (assignedActivity.assignmentCode.startsWith('staff-') ||
+            assignedActivity.assignmentCode.startsWith('custom-'))
+      ),
     [personsAssigned, activityId]
   );
 
   const judges = useMemo(
-    () => staff.filter(withAssignmentCode(activityId, 'staff-judge')),
+    () => staff.filter(withExactAssignmentCode(activityId, 'staff-judge')),
     [staff, activityId]
   );
 
   const scramblers = useMemo(
-    () => personsAssigned.filter(withAssignmentCode(activityId, 'staff-scrambler')),
+    () => personsAssigned.filter(withExactAssignmentCode(activityId, 'staff-scrambler')),
     [personsAssigned, activityId]
   );
 
   const runners = useMemo(
-    () => staff.filter(withAssignmentCode(activityId, 'staff-runner')),
+    () => staff.filter(withExactAssignmentCode(activityId, 'staff-runner')),
+    [staff, activityId]
+  );
+
+  const customRoles = useMemo(
+    () =>
+      staff.filter(
+        ({ assignedActivity }) =>
+          assignedActivity.activityId === activityId &&
+          assignedActivity.assignmentCode.startsWith('custom-')
+      ),
     [staff, activityId]
   );
 
@@ -55,8 +77,8 @@ export const usePersonsByAssignment = (
         p.assignments?.find(
           ({ activityId: aId, assignmentCode }) =>
             aId === activityId &&
-            assignmentCode.indexOf('staff-') > -1 &&
-            ['judge', 'scrambler', 'runner'].indexOf(assignmentCode.split('-')[1]) === -1
+            assignmentCode.startsWith('staff-') &&
+            ['staff-judge', 'staff-scrambler', 'staff-runner'].indexOf(assignmentCode) === -1
         )
       ),
     [activityId, staff]
@@ -68,6 +90,7 @@ export const usePersonsByAssignment = (
     judges,
     scramblers,
     runners,
+    customRoles,
     other,
   };
 };

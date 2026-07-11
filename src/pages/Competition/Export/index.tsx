@@ -1,6 +1,11 @@
 import { findGroupActivitiesByRound, parseActivityCode } from '../../../lib/domain/activities';
 import { eventNameById, roundFormatShortById } from '../../../lib/domain/events';
 import { acceptedRegistrations } from '../../../lib/domain/persons';
+import { formatRolesForExport, getCustomRoleDefinitions } from '../../../lib/domain/roles';
+import {
+  isGroupStaffAssignmentCode,
+  staffingAssignmentToText as formatStaffingAssignment,
+} from '../../../lib/domain/assignmentDefinitions';
 import { type ActivityWithParent } from '../../../lib/domain/types';
 import {
   getGroupifierActivityConfig,
@@ -66,9 +71,6 @@ const buildCsvConfig = (filename: string, headers: string[]) =>
 const groupNumber = ({ activityCode }: Pick<Activity, 'activityCode'>) =>
   parseActivityCode(activityCode)?.groupNumber;
 
-const staffingAssignmentToText = ({ assignmentCode, activity }: AssignmentWithActivity) =>
-  `${assignmentCode.split('-')[1][0].toUpperCase()}${groupNumber(activity)}`;
-
 const stagePrefixForNametags = (room: Room, activity: ActivityWithParent) => {
   const stageName = getStageName(room, activity);
   const stagePrefix = stageName.match(/[A-Za-z]+/)?.[0];
@@ -106,6 +108,8 @@ const ExportPage = () => {
     return null;
   }
 
+  const customRoleDefinitions = getCustomRoleDefinitions(wcif);
+
   const assignmentsToObj = (person: Person): Record<string, string | number> => {
     const obj: Record<string, string | number> = {};
     wcif.events.forEach((event: Event) => {
@@ -134,7 +138,7 @@ const ExportPage = () => {
         ({ assignmentCode }) => assignmentCode === 'competitor'
       );
       const staffingAssignments = assignmentsForEvent.filter(({ assignmentCode }) =>
-        assignmentCode.includes('staff')
+        isGroupStaffAssignmentCode(assignmentCode)
       );
 
       obj[event.id.toString()] = competingAssignment
@@ -147,7 +151,11 @@ const ExportPage = () => {
           : '';
 
       obj[event.id.toString() + '_staff'] =
-        staffingAssignments.map(staffingAssignmentToText).join(',') || '-';
+        staffingAssignments
+          .map(({ assignmentCode, activity }) =>
+            formatStaffingAssignment(assignmentCode, groupNumber(activity), wcif)
+          )
+          .join(',') || '-';
     });
     return obj;
   };
@@ -166,7 +174,7 @@ const ExportPage = () => {
           registrantId: person.registrantId,
           name: person.name,
           wcaId: person.wcaId ?? '',
-          role: (person.roles ?? []).filter((role) => role.indexOf('staff') === -1).join(','),
+          role: formatRolesForExport(person, customRoleDefinitions),
           country_iso: person.countryIso2,
         };
 
@@ -207,7 +215,7 @@ const ExportPage = () => {
         const assignmentData: Array<string | number> = [
           person.name,
           person.wcaId ?? '',
-          (person.roles ?? []).filter((role) => role.indexOf('staff') === -1).join(','),
+          formatRolesForExport(person, customRoleDefinitions),
           person.countryIso2,
         ];
         const assignments = assignmentsToObj(person);

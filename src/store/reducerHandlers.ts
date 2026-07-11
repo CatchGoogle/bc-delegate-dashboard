@@ -5,6 +5,10 @@ import {
   setActivityConfigExtensionData,
   setRoundConfigExtensionData,
 } from '../lib/wcif/extensions';
+import {
+  migrateCustomRoleId,
+  setCustomRoleDefinitionsExtensionData,
+} from '../lib/wcif/extensions/delegateDashboard/customRoles';
 import type { Extension } from '../lib/wcif/extensions/types';
 import { ActionType } from './actions';
 import type {
@@ -14,6 +18,7 @@ import type {
   PartialUpdateWcifPayload,
   SetCompetitionsPayload,
   UpdateGlobalExtensionPayload,
+  UpdateCustomRoleDefinitionsPayload,
   UpdateGroupCountPayload,
   UpdateRawObjPayload,
   UpdateRoundExtensionDataPayload,
@@ -258,6 +263,30 @@ export const reducers: Record<string, ReducerFunction> = {
           extensionData as Extension,
         ],
       },
+    };
+  },
+  [ActionType.UPDATE_CUSTOM_ROLE_DEFINITIONS]: (
+    state,
+    action: UpdateCustomRoleDefinitionsPayload
+  ) => {
+    if (!('roles' in action) || !state.wcif) return state;
+
+    const renamedRole = action.renamedRole;
+    const wcifAfterRename =
+      renamedRole && renamedRole.fromId !== renamedRole.toId
+        ? migrateCustomRoleId(state.wcif, renamedRole.fromId, renamedRole.toId)
+        : state.wcif;
+
+    const changedKeys = new Set<keyof Competition>([...state.changedKeys, 'extensions']);
+    if (renamedRole && renamedRole.fromId !== renamedRole.toId) {
+      changedKeys.add('persons');
+    }
+
+    return {
+      ...state,
+      needToSave: true,
+      changedKeys,
+      wcif: setCustomRoleDefinitionsExtensionData(wcifAfterRename, { roles: action.roles }),
     };
   },
   [ActionType.UPDATE_RAW_OBJ]: (state, action: UpdateRawObjPayload) => {

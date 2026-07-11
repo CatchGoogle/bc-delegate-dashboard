@@ -5,6 +5,7 @@ import {
   WCA_ORIGIN,
   WCA_OAUTH_CLIENT_ID,
   getMe,
+  isOAuthClientConfigured,
 } from '../../lib/api';
 import { type WcaUser } from '../../lib/api/types';
 import { AuthContext } from './AuthContext';
@@ -12,13 +13,18 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
- * Allows for use of staging api in production
+ * Must match a callback URL registered on the WCA OAuth application exactly.
  */
 const oauthRedirectUri = () => {
-  const appUri = window.location.origin;
+  const redirectUri = window.location.origin;
   const searchParams = new URLSearchParams(window.location.search);
   const stagingParam = searchParams.has('staging');
-  return stagingParam ? `${appUri}?staging=true` : appUri;
+  return stagingParam ? `${redirectUri}?staging=true` : redirectUri;
+};
+
+const clearSession = () => {
+  localStorage.removeItem(localStorageKey('accessToken'));
+  localStorage.removeItem(localStorageKey('expirationTime'));
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -57,8 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAccessToken(null);
       setUser(null);
       setExpirationTime(null);
-      localStorage.removeItem(localStorageKey('accessToken'));
-      localStorage.removeItem(localStorageKey('expirationTime'));
+      clearSession();
     }
   }, [expired]);
 
@@ -103,19 +108,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getMe()
       .then(({ me }) => {
         setUser(me);
+        setUserFetchError(undefined);
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         console.error(err);
+        if (err.message.includes('401')) {
+          setAccessToken(null);
+          setUser(null);
+          setExpirationTime(null);
+          clearSession();
+        }
         setUserFetchError(err);
       });
   }, [accessToken, expired, user]);
 
   const signIn = () => {
+    if (!isOAuthClientConfigured()) {
+      setUserFetchError(
+        new Error(
+          'OAuth is not configured for this deployment. Set VITE_WCA_OAUTH_CLIENT_ID to your WCA Application ID in Netlify environment variables, then redeploy.'
+        )
+      );
+      return;
+    }
+
     const params = new URLSearchParams({
       client_id: WCA_OAUTH_CLIENT_ID,
       response_type: 'token',
       redirect_uri: oauthRedirectUri(),
-      scope: 'public manage_competitions email',
+      scope: 'public manage_competitions',
     });
 
     window.location.href = `${WCA_ORIGIN}/oauth/authorize?${params.toString()}`;
@@ -123,8 +144,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = () => {
     setAccessToken(null);
-    localStorage.removeItem(localStorageKey('accessToken'));
+    setExpirationTime(null);
+    clearSession();
     setUser(null);
+    setUserFetchError(undefined);
   };
 
   const value = { user, signIn, signOut, signedIn, userFetchError };

@@ -1,5 +1,6 @@
 export { default as Home } from './Home';
 export { default as Staff } from './Staff';
+export { default as CustomRoles } from './CustomRoles';
 export { default as Rooms } from './Rooms';
 export { default as Round } from './Round';
 export { default as Person } from './Person';

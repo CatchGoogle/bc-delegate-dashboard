@@ -1,6 +1,8 @@
 import { getUpcomingManageableCompetitions, getWcif, patchWcif } from '../lib/api';
 import { sortWcifEvents } from '../lib/domain/events';
 import { type BulkInProgressAssignments } from '../lib/types';
+import { applyCustomRoleAssignmentsToPersons } from '../lib/wcif/extensions/delegateDashboard/customRoles';
+import { prepareWcifForWcaPatch } from '../lib/wcif/prepareForWcaPatch';
 import { validateWcif, type ValidationError } from '../lib/wcif/validation';
 import { type AppState } from './initialState';
 import {
@@ -11,7 +13,6 @@ import {
   type Round,
 } from '@wca/helpers';
 import type { Extension } from '@wca/helpers/lib/models/extension';
-import { pick } from 'lodash';
 import { type Dispatch } from 'redux';
 
 interface CompetitionSearchResult {
@@ -49,6 +50,7 @@ export const ActionType = {
   GENERATE_ROUND_ATTEMPT_ASSIGNMENTS: 'generate_round_attempt_assignments',
   EDIT_ACTIVITY: 'edit_activity',
   UPDATE_GLOBAL_EXTENSION: 'update_global_extension',
+  UPDATE_CUSTOM_ROLE_DEFINITIONS: 'update_custom_role_definitions',
   ADD_PERSON: 'add_person',
   UPDATE_RAW_OBJ: 'update_raw_obj',
 } as const;
@@ -130,10 +132,10 @@ export const fetchWCIF = (competitionId: string) => async (dispatch: Dispatch) =
   try {
     const wcif = await getWcif(competitionId);
     /* Sort events, so that we don't need to remember about this everywhere. */
-    const updatedWcif = {
+    const updatedWcif = applyCustomRoleAssignmentsToPersons({
       ...wcif,
       events: sortWcifEvents(wcif.events || []),
-    };
+    });
 
     dispatch(updateWCIF(updatedWcif));
     dispatch(updateWcifErrors(validateWcif(updatedWcif), true));
@@ -159,8 +161,7 @@ export const uploadCurrentWCIFChanges =
       return;
     }
 
-    const keysForPatch = ['formatVersion', ...Array.from(changedKeys)];
-    const changes = pick(wcif, keysForPatch);
+    const changes = prepareWcifForWcaPatch(wcif, changedKeys);
 
     dispatch(updateUploading(true));
     patchWcif(competitionId, changes)
@@ -421,6 +422,22 @@ export const updateGlobalExtension = (
 ): ReduxAction<typeof ActionType.UPDATE_GLOBAL_EXTENSION, UpdateGlobalExtensionPayload> => ({
   type: ActionType.UPDATE_GLOBAL_EXTENSION,
   extensionData,
+});
+
+export type UpdateCustomRoleDefinitionsPayload = {
+  roles: import('../lib/wcif/extensions/delegateDashboard/types').CustomRoleDefinition[];
+  renamedRole?: { fromId: string; toId: string };
+};
+export const updateCustomRoleDefinitions = (
+  roles: UpdateCustomRoleDefinitionsPayload['roles'],
+  renamedRole?: UpdateCustomRoleDefinitionsPayload['renamedRole']
+): ReduxAction<
+  typeof ActionType.UPDATE_CUSTOM_ROLE_DEFINITIONS,
+  UpdateCustomRoleDefinitionsPayload
+> => ({
+  type: ActionType.UPDATE_CUSTOM_ROLE_DEFINITIONS,
+  roles,
+  renamedRole,
 });
 
 export type AddPersonPayload = { person: Person };

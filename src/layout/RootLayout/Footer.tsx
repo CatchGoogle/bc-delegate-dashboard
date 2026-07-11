@@ -1,3 +1,4 @@
+import { APP_NAME, FORK_AUTHOR, GITHUB_URL, ORIGINAL_AUTHOR } from '../../config/branding';
 import { WCA_ORIGIN } from '../../lib/api';
 import { Divider } from '@mui/material';
 import Grid from '@mui/material/GridLegacy';
@@ -18,14 +19,13 @@ const linkStyle = {
 const gitSha = import.meta.env.VITE_GIT_SHA;
 
 const links = [
-  { text: 'GitHub', url: 'https://github.com/coder13/delegateDashboard' },
-  { text: 'Contact', url: 'mailto:choover11@gmail.com' },
-  // Netlify/preview builds sometimes don't provide VITE_GIT_SHA; avoid showing "undefined".
+  { text: 'GitHub', url: GITHUB_URL },
+  { text: 'Contact', url: `mailto:${ORIGINAL_AUTHOR.email}` },
   ...(gitSha
     ? [
         {
           text: gitSha,
-          url: `https://github.com/coder13/delegateDashboard/commit/${gitSha}`,
+          url: `${GITHUB_URL}/commit/${gitSha}`,
         },
       ]
     : []),
@@ -36,14 +36,16 @@ const Footer = () => {
     <Grid container sx={{ p: 2 }}>
       <Grid item>
         <Typography variant="body2">
-          Made by{' '}
+          Originally created by{' '}
           <Link
             sx={linkStyle}
-            href="https://github.com/coder13"
+            href={ORIGINAL_AUTHOR.url}
             target="_blank"
             rel="noopener noreferrer">
-            Cailyn Hoover
+            {ORIGINAL_AUTHOR.name}
           </Link>
+          {' · Forked and adapted by '}
+          {FORK_AUTHOR.name}
         </Typography>
       </Grid>
       <Divider orientation="vertical" variant="middle" style={{ margin: '0 0.5em' }} />
@@ -61,7 +63,7 @@ const Footer = () => {
       <Divider orientation="vertical" variant="middle" style={{ margin: '0 0.5em' }} />
       <Grid item>
         <Typography variant="body2">
-          {'Using data from '}
+          {APP_NAME} uses data from{' '}
           <Link sx={linkStyle} href={WCA_ORIGIN} target="_blank" rel="noopener noreferrer">
             {WCA_ORIGIN}
           </Link>

@@ -37,7 +37,7 @@ yarn build          # Production build to dist/ (runs tsc first)
 yarn test           # Vitest test suite
 ```
 
-Environment: `.env` sets `VITE_WCA_ORIGIN` to staging. Use `VITE_` prefix for all env vars (Vite requirement).
+Environment: `.env` defaults to production WCA API. Use `?staging=true` in the URL for staging. Set `VITE_WCA_OAUTH_CLIENT_ID` for production OAuth.
 
 ## State Management Architecture
 

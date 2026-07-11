@@ -9,6 +9,10 @@ const usePageTracking = (trackingCode: string) => {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
+    if (!trackingCode?.trim()) {
+      return;
+    }
+
     ReactGA.initialize(trackingCode, {
       debug: window.location.href.includes('localhost'),
       gaOptions: {

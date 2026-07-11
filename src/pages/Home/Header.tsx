@@ -1,3 +1,4 @@
+import { APP_NAME } from '../../config/branding';
 import { useAuth } from '../../providers/AuthProvider';
 import PeopleIcon from '@mui/icons-material/People';
 import { Avatar, Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
@@ -26,7 +27,7 @@ const Header = () => {
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           <Link to="/" style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex' }}>
             <PeopleIcon sx={{ fontSize: '1.5em', verticalAlign: 'middle', mr: 1 }} />
-            Delegate Dashboard
+            {APP_NAME}
           </Link>
         </Typography>
         {user ? (

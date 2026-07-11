@@ -3,5 +3,7 @@
   to = "/index.html"
   status = 200
 
-[context.production.environment]
-  REACT_APP_WCA_ORIGIN = "https://www.worldcubeassociation.org"
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"

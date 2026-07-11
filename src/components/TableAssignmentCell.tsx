@@ -1,8 +1,8 @@
 // Shows a Table Cell for configuring an assignment
-import { AssignmentsMap } from '../config/assignments';
+import { getAssignmentsMapForCompetition } from '../lib/domain/assignmentDefinitions';
+import { useAppSelector } from '../store';
 import { type Color, TableCell } from '@mui/material';
 import { styled } from '@mui/system';
-import type { AssignmentCode } from '@wca/helpers';
 import React from 'react';
 
 interface TableButtonProps {
@@ -32,12 +32,15 @@ const TableButton = styled(TableCell, {
 );
 
 interface TableAssignmentCellProps {
-  value?: AssignmentCode;
+  value?: string;
   onClick: () => void;
 }
 
-// for a person and a group.
 function TableAssignmentCell({ value, onClick }: TableAssignmentCellProps) {
+  const wcif = useAppSelector((state) => state.wcif);
+  const assignmentsMap = getAssignmentsMapForCompetition(wcif);
+  const assignment = value ? assignmentsMap[value] : undefined;
+
   return (
     <TableButton
       onMouseEnter={(e: React.MouseEvent) => {
@@ -54,8 +57,8 @@ function TableAssignmentCell({ value, onClick }: TableAssignmentCellProps) {
         e.bubbles = false;
         onClick();
       }}
-      assignmentColor={value ? AssignmentsMap[value]?.color : undefined}>
-      {value && AssignmentsMap[value]?.letter}
+      assignmentColor={assignment?.color}>
+      {assignment?.letter}
     </TableButton>
   );
 }

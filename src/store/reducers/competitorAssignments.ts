@@ -8,6 +8,10 @@ import {
   getGroupifierActivityConfig,
   setGroupifierActivityConfig,
 } from '../../lib/wcif/extensions/groupifier';
+import {
+  getCustomRoleDefinitionsExtensionData,
+  syncCustomRolesFromAssignments,
+} from '../../lib/wcif/extensions/delegateDashboard/customRoles';
 import { validateWcif } from '../../lib/wcif/validation';
 import {
   type AddPersonAssignmentsPayload,
@@ -99,6 +103,13 @@ const fixFeaturedCompetitors = (wcif: Competition, registrantId: number): Compet
   };
 };
 
+const syncPersonAssignments = (wcif: Competition, person: Person): Person => {
+  const customRoleDefinitions = getCustomRoleDefinitionsExtensionData(wcif).roles;
+  return syncCustomRolesFromAssignments(person, customRoleDefinitions);
+};
+
+const assignmentChangedKeys = (): Set<keyof Competition> => new Set(['persons']);
+
 export const addPersonAssignments = (
   state: AppState,
   action: AddPersonAssignmentsPayload
@@ -106,13 +117,16 @@ export const addPersonAssignments = (
   determineErrors({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
+    changedKeys: new Set([...state.changedKeys, ...assignmentChangedKeys()]),
     wcif: state.wcif
-      ? mapIn(state.wcif, 'persons', (person) =>
-          person.registrantId === action.registrantId
-            ? addAssignmentsToPerson(person, action.assignments)
-            : person
-        )
+      ? mapIn(state.wcif, 'persons', (person) => {
+          if (person.registrantId !== action.registrantId) {
+            return person;
+          }
+
+          const withAssignments = addAssignmentsToPerson(person, action.assignments);
+          return syncPersonAssignments(state.wcif!, withAssignments);
+        })
       : state.wcif,
   });
 
@@ -122,16 +136,21 @@ export const removePersonAssignments = (
 ): AppState => {
   if (!state.wcif) return state;
 
-  let updatedWcif: Competition = mapIn(state.wcif, 'persons', (p) =>
-    p.registrantId === action.registrantId ? removeAssignmentsFromPerson(p, action.activityId) : p
-  );
+  let updatedWcif: Competition = mapIn(state.wcif, 'persons', (p) => {
+    if (p.registrantId !== action.registrantId) {
+      return p;
+    }
+
+    const withAssignments = removeAssignmentsFromPerson(p, action.activityId);
+    return syncPersonAssignments(state.wcif!, withAssignments);
+  });
 
   updatedWcif = fixFeaturedCompetitors(updatedWcif, action.registrantId);
 
   return determineErrors({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
+    changedKeys: new Set([...state.changedKeys, ...assignmentChangedKeys()]),
     wcif: updatedWcif,
   });
 };
@@ -142,18 +161,21 @@ export const upsertPersonAssignments = (
 ): AppState => {
   if (!state.wcif) return determineErrors(state);
 
-  let updatedWcif: Competition = mapIn(state.wcif, 'persons', (person) =>
-    person.registrantId === action.registrantId
-      ? upsertAssignmentsOnPerson(person, action.assignments)
-      : person
-  );
+  let updatedWcif: Competition = mapIn(state.wcif, 'persons', (person) => {
+    if (person.registrantId !== action.registrantId) {
+      return person;
+    }
+
+    const withAssignments = upsertAssignmentsOnPerson(person, action.assignments);
+    return syncPersonAssignments(state.wcif!, withAssignments);
+  });
 
   updatedWcif = fixFeaturedCompetitors(updatedWcif, action.registrantId);
 
   return determineErrors({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
+    changedKeys: new Set([...state.changedKeys, ...assignmentChangedKeys()]),
     wcif: updatedWcif,
   });
 };
@@ -170,7 +192,7 @@ export const bulkAddPersonAssignments = (
   determineErrors({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
+    changedKeys: new Set([...state.changedKeys, ...assignmentChangedKeys()]),
     wcif:
       state.wcif &&
       mapIn(state.wcif, 'persons', (person) => {
@@ -181,7 +203,10 @@ export const bulkAddPersonAssignments = (
           }));
 
         if (personAssignments.length > 0) {
-          return addAssignmentsToPerson(person, personAssignments);
+          return syncPersonAssignments(
+            state.wcif!,
+            addAssignmentsToPerson(person, personAssignments)
+          );
         }
 
         return person;
@@ -241,6 +266,14 @@ export const bulkRemovePersonAssignments = (
     );
   });
 
+  // Sync custom roles for affected persons
+  updatedWcif = mapIn(updatedWcif, 'persons', (person) => {
+    if (!affectedRegistrantIds.has(person.registrantId)) {
+      return person;
+    }
+    return syncPersonAssignments(updatedWcif, person);
+  });
+
   // Clean up featuredCompetitors for all affected persons
   for (const registrantId of affectedRegistrantIds) {
     updatedWcif = fixFeaturedCompetitors(updatedWcif, registrantId);
@@ -249,7 +282,7 @@ export const bulkRemovePersonAssignments = (
   return determineErrors({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
+    changedKeys: new Set([...state.changedKeys, ...assignmentChangedKeys()]),
     wcif: updatedWcif,
   });
 };
@@ -273,7 +306,10 @@ export const bulkUpsertPersonAssignments = (
 
     if (personAssignments.length > 0) {
       affectedRegistrantIds.add(person.registrantId);
-      return upsertAssignmentsOnPerson(person, personAssignments);
+      return syncPersonAssignments(
+        state.wcif!,
+        upsertAssignmentsOnPerson(person, personAssignments)
+      );
     }
 
     return person;
@@ -287,7 +323,7 @@ export const bulkUpsertPersonAssignments = (
   return determineErrors({
     ...state,
     needToSave: true,
-    changedKeys: new Set([...state.changedKeys, 'persons']),
+    changedKeys: new Set([...state.changedKeys, ...assignmentChangedKeys()]),
     wcif: updatedWcif,
   });
 };

@@ -1,0 +1,48 @@
+{
+  "$id": "com.delegate-dashboard.customRoleDefinitions",
+  "title": "Custom Role Definitions",
+  "description": "Competition-level definitions for custom staff roles that may not be part of the base WCIF specification.",
+  "type": "object",
+  "properties": {
+    "roles": {
+      "description": "Custom role definitions configured for this competition.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique role identifier stored in WCIF."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable role name."
+          },
+          "exportStrategy": {
+            "type": "string",
+            "enum": ["roles", "extension", "both"],
+            "description": "Where to persist role assignments when saving WCIF."
+          },
+          "showOnStaffPage": {
+            "type": "boolean",
+            "description": "Whether this role appears as a toggle column on the Staff page."
+          },
+          "assignPerGroup": {
+            "type": "boolean",
+            "description": "Whether this role can be assigned per-group in Configure Assignments."
+          },
+          "assignmentKey": {
+            "type": "string",
+            "description": "Keyboard shortcut for painting this assignment per group."
+          },
+          "assignmentLetter": {
+            "type": "string",
+            "description": "Short label shown in assignment cells."
+          }
+        },
+        "required": ["id", "name"]
+      }
+    }
+  },
+  "required": ["roles"]
+}

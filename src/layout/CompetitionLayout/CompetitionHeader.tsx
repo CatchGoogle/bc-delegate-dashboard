@@ -6,6 +6,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import BadgeIcon from '@mui/icons-material/Badge';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import SearchIcon from '@mui/icons-material/Search';
 import ViewListIcon from '@mui/icons-material/ViewList';
@@ -97,6 +98,11 @@ export const DrawerLinks = () => {
           url: `/competitions/${competitionId}/staff`,
           icon: <PeopleIcon />,
           text: 'Configure Staff',
+        },
+        {
+          url: `/competitions/${competitionId}/custom-roles`,
+          icon: <BadgeIcon />,
+          text: 'Custom Roles',
         },
         {
           url: `/competitions/${competitionId}/scrambler-schedule`,

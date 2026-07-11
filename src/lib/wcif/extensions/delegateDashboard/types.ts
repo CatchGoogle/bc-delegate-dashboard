@@ -32,3 +32,55 @@ export interface ActivityConfigExtensionData {
 export interface RoundConfigExtensionData {
   [key: string]: unknown;
 }
+
+/**
+ * How a custom role is persisted when saving WCIF.
+ * - roles: standard person.roles array
+ * - extension: person.extensions only (for unsupported roles)
+ * - both: both locations for maximum compatibility
+ */
+export type CustomRoleExportStrategy = 'roles' | 'extension' | 'both';
+
+/**
+ * A custom role definition stored at the competition level.
+ */
+export interface CustomRoleDefinition {
+  id: string;
+  name: string;
+  exportStrategy?: CustomRoleExportStrategy;
+  showOnStaffPage?: boolean;
+  /** When true, this role can be painted per-group in Configure Assignments */
+  assignPerGroup?: boolean;
+  /** Keyboard shortcut for assignment painting (e.g. "m" for medical) */
+  assignmentKey?: string;
+  /** Short label shown in assignment cells (e.g. "CO" for commentator) */
+  assignmentLetter?: string;
+}
+
+/**
+ * Competition-level extension data for custom role definitions.
+ */
+export interface CustomRoleDefinitionsExtensionData {
+  roles: CustomRoleDefinition[];
+}
+
+/**
+ * Person-level extension data for custom roles.
+ */
+export interface PersonCustomRolesExtensionData {
+  roles: string[];
+}
+
+/**
+ * Competition-level backup for custom role data the WCA API may not accept on persons.
+ */
+export interface CustomRoleAssignmentRecord {
+  registrantId: number;
+  activityId: number;
+  roleId: string;
+}
+
+export interface CustomRoleAssignmentsExtensionData {
+  groupAssignments: CustomRoleAssignmentRecord[];
+  rolesByRegistrantId: Record<string, string[]>;
+}

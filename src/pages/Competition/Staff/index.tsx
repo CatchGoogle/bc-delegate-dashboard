@@ -1,5 +1,11 @@
 import Link from '../../../components/MaterialLink';
 import { acceptedRegistration, isOrganizerOrDelegate } from '../../../lib/domain/persons';
+import {
+  countPersonsWithRole,
+  getCustomRoleDefinitions,
+  getStaffPageRoles,
+} from '../../../lib/domain/roles';
+import { personHasRole } from '../../../lib/wcif/extensions/delegateDashboard/customRoles';
 import { pluralize } from '../../../lib/utils';
 import { useBreadcrumbs } from '../../../providers/BreadcrumbsProvider';
 import { useAppDispatch, useAppSelector } from '../../../store';
@@ -30,26 +36,6 @@ import { useParams } from 'react-router-dom';
 
 type CompetitorSort = 'name' | 'wcaId' | 'dob';
 
-interface RoleOption {
-  id: string;
-  name: string;
-}
-
-const ROLES: RoleOption[] = [
-  // {
-  //   id: 'staff-judge',
-  //   name: 'Judge',
-  // },
-  {
-    id: 'staff-scrambler',
-    name: 'Staff',
-  },
-  // {
-  //   id: 'staff-runner',
-  //   name: 'Runner',
-  // },
-];
-
 const Staff = () => {
   const wcif = useAppSelector((state) => state.wcif);
   const { competitionId = '' } = useParams<{ competitionId?: string }>();
@@ -73,6 +59,8 @@ const Staff = () => {
     return null;
   }
 
+  const customRoleDefinitions = getCustomRoleDefinitions(wcif);
+  const staffRoles = getStaffPageRoles(wcif);
   const acceptedPersons = wcif.persons.filter(acceptedRegistration);
 
   const filteredPersons =
@@ -134,6 +122,9 @@ const Staff = () => {
           </RadioGroup>
         </FormControl>
         <Box sx={{ display: 'flex', flex: 1 }} />
+        <Button component={Link} to={`/competitions/${competitionId}/custom-roles`} sx={{ mr: 1 }}>
+          Manage Custom Roles
+        </Button>
         <Button onClick={() => setNonCompetingStaffDialogOpen(true)}>
           Add Non-Competing Staff
         </Button>
@@ -147,7 +138,7 @@ const Staff = () => {
               <TableCell sx={boldCellSx}>DOB</TableCell>
               <TableCell
                 sx={boldCellSx}
-                colSpan={ROLES.length + 2}
+                colSpan={staffRoles.length + 2}
                 style={{
                   textAlign: 'center',
                 }}>
@@ -160,7 +151,7 @@ const Staff = () => {
               <TableCell sx={boldCellSx} />
               <TableCell sx={boldCellSx}>Delegate</TableCell>
               <TableCell sx={boldCellSx}>Organizer</TableCell>
-              {ROLES.map((role) => (
+              {staffRoles.map((role) => (
                 <TableCell key={role.id} sx={boldCellSx}>
                   {role.name}
                 </TableCell>
@@ -207,12 +198,12 @@ const Staff = () => {
                       checked={(person.roles ?? []).includes('organizer')}
                     />
                   </TableCell>
-                  {ROLES.map((role) => (
+                  {staffRoles.map((role) => (
                     <TableCell key={role.id} padding="checkbox">
                       <Checkbox
                         disabled={!acceptedRegistration(person)}
                         color="primary"
-                        checked={(person.roles ?? []).includes(role.id)}
+                        checked={personHasRole(person, role.id, customRoleDefinitions)}
                         onChange={(e) => handleChange(e, person.registrantId, role.id)}
                       />
                     </TableCell>
@@ -249,13 +240,13 @@ const Staff = () => {
                     .length
                 }
               </TableCell>
-              {ROLES.map((role) => (
+              {staffRoles.map((role) => (
                 <TableCell key={role.id} sx={boldCellSx}>
-                  {
-                    wcif.persons
-                      .filter(acceptedRegistration)
-                      .filter((person) => (person.roles ?? []).includes(role.id)).length
-                  }
+                  {countPersonsWithRole(
+                    wcif.persons.filter(acceptedRegistration),
+                    role.id,
+                    customRoleDefinitions
+                  )}
                 </TableCell>
               ))}
             </TableRow>
