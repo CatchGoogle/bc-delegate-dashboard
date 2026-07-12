@@ -97,11 +97,19 @@ export const wcaApiFetch = async <T = unknown>(
   );
 
   if (!res.ok) {
-    if (res.statusText) {
-      throw new Error(`${res.status}: ${res.statusText}`);
-    } else {
-      throw new Error(`Something went wrong: Status code ${res.status}`);
+    const errorBody = await res.text();
+    let message = `Something went wrong: Status code ${res.status}`;
+
+    if (errorBody) {
+      try {
+        const parsed = JSON.parse(errorBody) as { error?: string; message?: string };
+        message = parsed.error || parsed.message || `${message} — ${errorBody.slice(0, 300)}`;
+      } catch {
+        message = `${message} — ${errorBody.slice(0, 300)}`;
+      }
     }
+
+    throw new Error(message);
   }
 
   return await res.json();

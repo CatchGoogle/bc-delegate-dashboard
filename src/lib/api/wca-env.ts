@@ -11,6 +11,11 @@ const PLACEHOLDER_CLIENT_IDS = new Set([
   'PASTE_YOUR_APPLICATION_ID_HERE',
 ]);
 
+export function getGaMeasurementId(): string {
+  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+  return typeof measurementId === 'string' ? measurementId.trim() : '';
+}
+
 export const isOAuthClientConfigured = (): boolean => {
   if (STAGING_QUERY_PARAMS) {
     return true;

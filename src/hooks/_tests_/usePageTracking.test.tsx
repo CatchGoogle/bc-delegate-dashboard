@@ -28,7 +28,7 @@ const reactGaMock = ReactGA as unknown as {
   pageview: ReturnType<typeof vi.fn>;
 };
 
-const TrackingTester = ({ code }: { code: string }) => {
+const TrackingTester = ({ code }: { code?: string }) => {
   usePageTracking(code);
   return null;
 };
@@ -77,5 +77,27 @@ describe('usePageTracking', () => {
     await waitFor(() => {
       expect(reactGaMock.pageview).toHaveBeenCalledWith('/next');
     });
+  });
+
+  it('does not initialize analytics when tracking code is missing', () => {
+    vi.clearAllMocks();
+    useAuthMock.mockReturnValue({
+      user: null,
+      signIn: vi.fn(),
+      signOut: vi.fn(),
+      signedIn: vi.fn(() => false),
+    });
+    useLocationMock.mockReturnValue({
+      pathname: '/',
+      search: '',
+      hash: '',
+      state: null,
+      key: 'k1',
+    });
+
+    render(<TrackingTester code="" />);
+
+    expect(reactGaMock.initialize).not.toHaveBeenCalled();
+    expect(reactGaMock.pageview).not.toHaveBeenCalled();
   });
 });

@@ -8,10 +8,9 @@ import {
 const isCustomRoleId = (roleId: string): boolean => roleId.startsWith('custom-');
 
 /**
- * The WCA production API accepts WCIF patches for persons/assignments but can 500 when
- * person-level extensions or non-standard assignment codes are included.
- * This prepares a PATCH-safe payload while preserving custom role data in a
- * competition-level delegateDashboard extension.
+ * The WCA production API accepts WCIF patches for persons/assignments but rejects
+ * custom role codes on person records. Competition-level delegateDashboard extensions
+ * (customRoleDefinitions, customRoleAssignments) are persisted on the server.
  */
 export function prepareWcifForWcaPatch(
   wcif: Competition,

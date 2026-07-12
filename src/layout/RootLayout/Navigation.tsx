@@ -1,4 +1,5 @@
 import usePageTracking from '../../hooks/usePageTracking';
+import { getGaMeasurementId } from '../../lib/api';
 import { CompetitionLayout } from '../CompetitionLayout';
 import {
   Home as CompetitionHomePage,
@@ -46,7 +47,7 @@ const Comp404 = () => {
 };
 
 const Navigation = () => {
-  usePageTracking(import.meta.env.VITE_GA_MEASUREMENT_ID);
+  usePageTracking(getGaMeasurementId());
 
   return (
     <Routes>
