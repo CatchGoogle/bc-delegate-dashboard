@@ -4,6 +4,8 @@ A fork of [coder13/delegateDashboard](https://github.com/coder13/delegateDashboa
 
 Originally created by Cailyn Sinclair; forked and adapted by Heewon Hwang.
 
+**Source:** [CatchGoogle/bc-delegate-dashboard](https://github.com/CatchGoogle/bc-delegate-dashboard)
+
 ## What's New in This Fork
 
 ### Custom Roles

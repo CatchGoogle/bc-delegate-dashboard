@@ -29,7 +29,8 @@ describe('RootLayout', () => {
     const { getByText } = renderLayout();
 
     expect(getByText('Home Content')).toBeInTheDocument();
-    expect(getByText('GitHub')).toBeInTheDocument();
+    expect(getByText('Contact')).toBeInTheDocument();
+    expect(getByText(/Based on/)).toBeInTheDocument();
   });
 
   it('renders error alert when user fetch fails', () => {

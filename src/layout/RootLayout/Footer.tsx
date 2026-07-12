@@ -1,15 +1,11 @@
-import { APP_NAME, FORK_AUTHOR, GITHUB_URL, ORIGINAL_AUTHOR } from '../../config/branding';
+import { APP_NAME, FORK_PROJECT, ORIGINAL_PROJECT } from '../../config/branding';
 import { WCA_ORIGIN } from '../../lib/api';
-import { Divider } from '@mui/material';
-import Grid from '@mui/material/GridLegacy';
-import Link from '@mui/material/Link';
-import Typography from '@mui/material/Typography';
+import { Box, Link, Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
 
 const linkStyle = {
-  verticalAlign: 'middle',
   fontWeight: 500,
-  color: grey['900'],
+  color: grey[900],
   '&:hover': {
     textDecoration: 'none',
     opacity: 0.7,
@@ -18,83 +14,53 @@ const linkStyle = {
 
 const gitSha = import.meta.env.VITE_GIT_SHA;
 
-const links = [
-  { text: 'GitHub', url: GITHUB_URL },
-  { text: 'Contact', url: `mailto:${ORIGINAL_AUTHOR.email}` },
-  ...(gitSha
-    ? [
-        {
-          text: gitSha,
-          url: `${GITHUB_URL}/commit/${gitSha}`,
-        },
-      ]
-    : []),
-];
-
 const Footer = () => {
   return (
-    <Grid container sx={{ p: 2 }}>
-      <Grid item>
-        <Typography variant="body2">
-          Originally created by{' '}
-          <Link
-            sx={linkStyle}
-            href={ORIGINAL_AUTHOR.url}
-            target="_blank"
-            rel="noopener noreferrer">
-            {ORIGINAL_AUTHOR.name}
-          </Link>
-          {' · Forked and adapted by '}
-          {FORK_AUTHOR.name}
-        </Typography>
-      </Grid>
-      <Divider orientation="vertical" variant="middle" style={{ margin: '0 0.5em' }} />
-      <Grid item>
-        <Typography variant="body2">
-          <Link
-            sx={linkStyle}
-            href="https://cailynhoover.com/donate"
-            target="_blank"
-            rel="noopener noreferrer">
-            Donate
-          </Link>
-        </Typography>
-      </Grid>
-      <Divider orientation="vertical" variant="middle" style={{ margin: '0 0.5em' }} />
-      <Grid item>
-        <Typography variant="body2">
-          {APP_NAME} uses data from{' '}
-          <Link sx={linkStyle} href={WCA_ORIGIN} target="_blank" rel="noopener noreferrer">
-            {WCA_ORIGIN}
-          </Link>
-        </Typography>
-      </Grid>
-      <Grid item sx={{ flexGrow: 1 }} />
-      <Grid item>
-        <Grid container spacing={1}>
-          {links.map(({ text, url }) => (
-            <Grid item key={text}>
-              <Link
-                sx={{
-                  verticalAlign: 'middle',
-                  fontWeight: 500,
-                  color: grey['900'],
-                  '&:hover': {
-                    textDecoration: 'none',
-                    opacity: 0.7,
-                  },
-                }}
-                variant="body2"
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer">
-                {text}
-              </Link>
-            </Grid>
-          ))}
-        </Grid>
-      </Grid>
-    </Grid>
+    <Box
+      component="footer"
+      sx={{
+        px: 2,
+        py: 1.5,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.75,
+        borderTop: 1,
+        borderColor: 'divider',
+      }}>
+      <Typography variant="body2" lineHeight={1.6}>
+        Based on{' '}
+        <Link sx={linkStyle} href={ORIGINAL_PROJECT.url} target="_blank" rel="noopener noreferrer">
+          {ORIGINAL_PROJECT.name}
+        </Link>{' '}
+        by {ORIGINAL_PROJECT.author} ·{' '}
+        <Link sx={linkStyle} href={FORK_PROJECT.url} target="_blank" rel="noopener noreferrer">
+          {FORK_PROJECT.name}
+        </Link>{' '}
+        by {FORK_PROJECT.author} ·{' '}
+        <Link sx={linkStyle} href={`mailto:${FORK_PROJECT.contactEmail}`}>
+          Contact
+        </Link>
+      </Typography>
+
+      <Typography variant="body2" lineHeight={1.6} color="text.secondary">
+        {APP_NAME} uses data from{' '}
+        <Link sx={linkStyle} href={WCA_ORIGIN} target="_blank" rel="noopener noreferrer">
+          {WCA_ORIGIN}
+        </Link>
+        {gitSha && (
+          <>
+            {' · '}
+            <Link
+              sx={linkStyle}
+              href={`${FORK_PROJECT.url}/commit/${gitSha}`}
+              target="_blank"
+              rel="noopener noreferrer">
+              {gitSha}
+            </Link>
+          </>
+        )}
+      </Typography>
+    </Box>
   );
 };
 
